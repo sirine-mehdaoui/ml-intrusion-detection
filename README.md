@@ -1,2 +1,13 @@
-# ml-intrusion-detection
-Projet de mise en place d’un environnement IDS/IPS composé de trois machines virtuelles : un attaquant générant des attaques, une cible simulant un serveur vulnérable et un analyseur exploitant l’IA pour détecter et bloquer les intrusions en temps réel via une API et un tableau de bord.
+# IDS/IPS Testbed — [Nom du projet]
+
+## Objectif
+Mettre en place un environnement reproductible composé de trois machines :
+- **Attaquant** : génère scénarios d'attaque (scan, DoS, brute force...).
+- **Cible** : serveur victime avec services exposés.
+- **Analyseur** : capture le trafic, extrait caractéristiques, détecte intrusions via modèles IA et active fonctions IPS (blocage), expose API & dashboard.
+
+## Démarrage rapide
+1. Cloner le repo:
+   ```bash
+   git clone git@github.com:monorg/monrepo.git
+   cd monrepo
