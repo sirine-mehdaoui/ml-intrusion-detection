@@ -1,0 +1,57 @@
+﻿VAGRANTFILE_API_VERSION = "2"
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  config.vm.box_check_update = false
+  # Box par défaut
+  BOX = "ubuntu/focal64"
+  # Paramètres généraux
+  config.vm.synced_folder "../..", "/vagrant", disabled: false
+  # Attacker VM
+  config.vm.define "attacker" do |attacker|
+    attacker.vm.box = BOX
+    attacker.vm.hostname = "attacker"
+    attacker.vm.network "private_network", ip: "192.168.56.10"
+    attacker.vm.provider "virtualbox" do |vb|
+      vb.name = "ml-id-attacker"
+      vb.memory = "512"
+    end
+    # Provisioner: outils d'attaque
+    attacker.vm.provision "shell", inline: <<-SHELL
+      sudo apt-get update -y
+      sudo apt-get install -y nmap hping3 iputils-ping
+    SHELL
+  end
+  # Victim VM
+  config.vm.define "victim" do |victim|
+    victim.vm.box = BOX
+    victim.vm.hostname = "victim"
+    victim.vm.network "private_network", ip: "192.168.56.20"
+    victim.vm.provider "virtualbox" do |vb|
+      vb.name = "ml-id-victim"
+      vb.memory = "1024"
+    end
+    # Provisioner: services exposés (nginx + openssh)
+    victim.vm.provision "shell", inline: <<-SHELL
+      sudo apt-get update -y
+      sudo apt-get install -y nginx openssh-server
+      sudo systemctl enable --now nginx
+    SHELL
+  end
+  # Analyzer VM
+  config.vm.define "analyzer" do |analyzer|
+    analyzer.vm.box = BOX
+    analyzer.vm.hostname = "analyzer"
+    analyzer.vm.network "private_network", ip: "192.168.56.30"
+    analyzer.vm.provider "virtualbox" do |vb|
+      vb.name = "ml-id-analyzer"
+      vb.memory = "1024"
+    end
+    # Provisioner: capture + Python + libs
+    analyzer.vm.provision "shell", inline: <<-SHELL
+      sudo apt-get update -y
+      sudo apt-get install -y tshark tcpdump python3 python3-pip build-essential
+      sudo pip3 install --upgrade pip
+      sudo pip3 install scapy pandas scikit-learn flask
+      sudo usermod -aG wireshark vagrant || true
+    SHELL
+  end
+end
